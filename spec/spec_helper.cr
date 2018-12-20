@@ -1,2 +1,2 @@
 require "spec"
-require "../src/ecdsa-ecdh-ecies"
+require "../src/eccrypto"
