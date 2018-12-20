@@ -3,6 +3,8 @@
 A Crystal C binding for the ECDSA functionality of OpenSSL that focuses specifically on secp256k1.
 This library requires you to have OpenSSL 1.1.1 installed.
 
+[![Build Status](https://travis-ci.org/SushiChain/crystal-ecdsa.svg?branch=master)](https://travis-ci.org/SushiChain/crystal-ecdsa)
+
 ## Installation
 
 1. Add the dependency to your `shard.yml`:
