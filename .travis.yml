@@ -1,1 +1,3 @@
 language: crystal
+sudo: required
+before_script: tools/install_openssl.sh 1.1.1
