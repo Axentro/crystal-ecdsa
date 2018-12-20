@@ -1,4 +1,4 @@
 language: crystal
 sudo: required
 before_install:
-  - cd ext && ./config && make && make install
+  - cd ext && make
