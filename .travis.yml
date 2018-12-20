@@ -1,3 +1,4 @@
 language: crystal
 sudo: required
-before_install: tools/install_openssl.sh 1.1.1
+before_install:
+  - cd ext && ./config && make && make install
