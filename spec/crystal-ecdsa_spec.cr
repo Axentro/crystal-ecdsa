@@ -51,4 +51,14 @@ describe ECCrypto do
     end
 
   end
+
+  describe "get_public_key_from_private" do
+    it "should get a public key from a private key" do
+      key_pair = ECCrypto.create_key_pair
+      private_key = key_pair[:hex_private_key]
+      expected_public_key = key_pair[:hex_public_key]
+      public_key = ECCrypto.get_public_key_from_private(private_key)
+      public_key.should eq(expected_public_key)
+    end
+  end
 end

@@ -1,5 +1,5 @@
 # This is using a path to the default installed version of openSSL installed on the operating system.
-# This library requires openssl 1.1.1 to be installed as we use the ECDSA_SIG getters
+# This library requires openssl to be installed
 @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'`")]
 @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'`")]
 lib LibECCrypto
@@ -86,7 +86,7 @@ lib LibECCrypto
   # param:  pbuf   returns pointer to allocated buffer
   # param:  ctx    BN_CTX object (optional)
   # return: the length of the encoded octet string or 0 if an error occurred
-  fun EC_POINT_point2hex(x0 : EcGroup, x1 : EcPoint, form : PointConversionFormT) : LibC::Char*
+  fun EC_POINT_point2hex(x0 : EcGroup, x1 : EcPoint, form : PointConversionFormT, ctx : Void*) : LibC::Char*
   fun EC_POINT_hex2point(x0 : EcGroup, x1 : LibC::Char*, x2 : EcPoint, x3 : Void*) : EcPoint
   fun EC_POINT_bn2point(x0 : EcGroup, x1 : LibC::Int*, x2 : EcPoint) : EcPoint
   fun EC_POINT_free(point : EcPoint)
@@ -156,4 +156,5 @@ lib LibECCrypto
   # return: pointer to a ECDSA_SIG structure or NULL if an error occurred
   fun ECDSA_SIG_new : EcdsaSig
 
+  fun EC_POINT_mul(group : EcGroup, r : EcPoint, n : LibC::Int*, q : EcPoint, m : LibC::Int*, ctx : LibC::Int*) : LibC::Int
 end
