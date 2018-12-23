@@ -33,6 +33,9 @@ sig = ECCrypto.sign(private_key, message)
 
 # verify the signature with the public key and the signature
 ECCrypto.verify(public_key, message, sig["r"], sig["s"])
+
+# get the public key from a private key
+public_key = ECCrypto.get_public_key_from_private(private_key)
 ```
 
 You can create a keypair which returns the public and private keys. The private key will always be of length 64 and the public key of length 130
