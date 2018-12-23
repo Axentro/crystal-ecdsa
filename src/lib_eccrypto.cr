@@ -9,7 +9,6 @@ lib LibECCrypto
   alias EcPoint = Void*
 
   type EcGroup = Void*
-  type EcdsaSig = Void*
 
   enum PointConversionFormT
     PointConversionCompressed   = 2
@@ -118,21 +117,36 @@ lib LibECCrypto
   # param:  eckey     EC_KEY object containing a public EC key
   # return: 1 if the signature is valid, 0 if the signature is invalid
   #          and -1 on error
-  fun ECDSA_do_verify(dgst : UInt8*, dgst_len : LibC::Int, sig : EcdsaSig, eckey : Void*) : LibC::Int
+  fun ECDSA_do_verify(dgst : UInt8*, dgst_len : LibC::Int, sig : EcdsaSig2, eckey : Void*) : LibC::Int
 
-  # Accessor for r and s fields of ECDSA_SIG
-  # param:  sig  pointer to ECDSA_SIG structure
-  # param:  pr   pointer to BIGNUM pointer for r (may be NULL)
-  # param:  ps   pointer to BIGNUM pointer for s (may be NULL)
-  fun ECDSA_SIG_get0(sig : EcdsaSig, pr : LibC::Int**, ps : LibC::Int**)
+  # Use our own Bignum so we can work with the ECDSA_SIG_Struct directly
+  # as we were originally using the setters and getters from OpenSSL 1.1.1
+  # but this way we can still use older versions of OpenSSL which is much
+  # easier for portability
+  struct Bignum
+    d : LibC::ULong*
+    top : LibC::Int
+    dmax : LibC::Int
+    neg : LibC::Int
+    flags : LibC::Int
+  end
 
-  # Accessor for r field of ECDSA_SIG
-  # param:  sig  pointer to ECDSA_SIG structure
-  fun ECDSA_SIG_get0_r(sig : EcdsaSig) : Void*
+  # Use own own struct so we can get the r,s as our own BigNum
+  struct ECDSA_SIG_Struct
+    r : BigNum*
+    s : BigNum*
+  end
 
-  # Accessor for s field of ECDSA_SIG
-  # param:  sig  pointer to ECDSA_SIG structure
-  fun ECDSA_SIG_get0_s(sig : EcdsaSig) : Void*
+  # Use this version of the ECDSA_SIG to set the r,s
+  struct ECDSA_SIG_Struct_setter
+    r : LibC::Int*
+    s : LibC::Int*
+  end
+
+  # Set some types and aliases we can use to work with ECDSA_SIG and Bignum
+  type EcdsaSig = ECDSA_SIG_Struct*
+  alias EcdsaSig2 = ECDSA_SIG_Struct_setter*
+  type BigNum = Bignum*
 
   # frees a ECDSA_SIG structure
   # param:  sig  pointer to the ECDSA_SIG structure
@@ -142,9 +156,4 @@ lib LibECCrypto
   # return: pointer to a ECDSA_SIG structure or NULL if an error occurred
   fun ECDSA_SIG_new : EcdsaSig
 
-  # Setter for r and s fields of ECDSA_SIG
-  # param:  sig  pointer to ECDSA_SIG structure
-  # param:  r    pointer to BIGNUM for r (may be NULL)
-  # param:  s    pointer to BIGNUM for s (may be NULL)
-  fun ECDSA_SIG_set0(sig : EcdsaSig, r : LibC::Int*, s : LibC::Int*) : LibC::Int
 end

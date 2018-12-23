@@ -92,17 +92,16 @@ module ECCrypto
     raise "Error could not sign message with key" if sign_pointer.null?
 
     # get the r,s from the signing
-    r_raw = LibECCrypto.ECDSA_SIG_get0_r(sign_pointer)
-    r_hex = LibECCrypto.BN_bn2hex(r_raw)
+    sign_value = sign_pointer.value
+    r_hex = LibECCrypto.BN_bn2hex(sign_value.r)
+    s_hex = LibECCrypto.BN_bn2hex(sign_value.s)
+
     r = String.new(r_hex).downcase
-
-    s_raw = LibECCrypto.ECDSA_SIG_get0_s(sign_pointer)
-    s_hex = LibECCrypto.BN_bn2hex(s_raw)
     s = String.new(s_hex).downcase
-
+  
     # Free up mem
     LibECCrypto.EC_KEY_free(myecc)
-    LibECCrypto.BN_clear_free(bn)
+    # LibECCrypto.BN_clear_free(bn)
     LibECCrypto.ECDSA_SIG_free(sign_pointer)
 
     {
@@ -132,10 +131,6 @@ module ECCrypto
     set_key = LibECCrypto.EC_KEY_set_public_key(myecc, ec_point)
     raise "Error could not set public key to EC" unless set_key == 1
 
-    # create signature
-    signature = LibECCrypto.ECDSA_SIG_new
-    raise "Error could not create a new signature" if signature.null?
-
     # convert r,s hex to bn
     r_bn = LibECCrypto.BN_new
     raise "Error could not create a new bn for r" if r_bn.null?
@@ -146,10 +141,12 @@ module ECCrypto
     LibECCrypto.BN_hex2bn(pointerof(s_bn), s)
 
     # set r,s onto signature
-    LibECCrypto.ECDSA_SIG_set0(signature, r_bn, s_bn)
+    sig = LibECCrypto::ECDSA_SIG_Struct_setter.new
+    sig.r = r_bn
+    sig.s = s_bn
 
     # verify
-    result = LibECCrypto.ECDSA_do_verify(message, message.bytesize, signature, myecc)
+    result = LibECCrypto.ECDSA_do_verify(message, message.bytesize, pointerof(sig), myecc)
 
     # Free up mem
     LibECCrypto.EC_KEY_free(myecc)
