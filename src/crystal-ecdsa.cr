@@ -196,4 +196,90 @@ module ECCrypto
 
     String.new(public_key_pointer).downcase
   end
+
+  def self.encrypt(hex_receiver_public_key : String, message : String) : String
+    dummy            : UInt8 = 0
+    epubk            : UInt8* = pointerof(dummy)
+    epubk_len        : LibC::SizeT = 0
+    iv               : UInt8* = pointerof(dummy)
+    iv_len           : LibC::Int = 0
+    tag              : UInt8* = pointerof(dummy)
+    tag_len          : LibC::Int = 0
+    ciphertext       : UInt8* = pointerof(dummy)
+    ciphertext_len   : LibC::SizeT = 0
+
+    # set the group type from NID
+    eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
+    raise "Error could not set EC group" unless eccgrp_id != 0
+
+    # use the crypto library to encrypt the message using the receiver public key and get the ephemeral public key, the init vector and the tag
+    #    (we add one to message size to encrypt the null at the end of the string)
+    status = LibECCrypto.encrypt_message(message.bytes, message.size + 1,
+                                         eccgrp_id, hex_receiver_public_key,
+                                         pointerof(epubk), pointerof(epubk_len),
+                                         pointerof(iv), pointerof(iv_len),
+                                         pointerof(tag), pointerof(tag_len),
+                                         pointerof(ciphertext), pointerof(ciphertext_len))
+    raise String.new(ciphertext) unless status == 0
+
+    # put the encrypted elements all together into one long hex string that can be transmitted (pieces are separated by 'fx')
+    msg = bytes2hex(ciphertext, ciphertext_len) + "fx" + bytes2hex(tag, tag_len) + "fx" + bytes2hex(iv, iv_len) + "fx" + bytes2hex(epubk, epubk_len)
+    return msg
+  end
+
+  def self.decrypt(hex_receiver_private_key : String, encrypted_message : String) : String
+    dummy             : UInt8 = 0
+    decrypted_message : UInt8* = pointerof(dummy) 
+
+    # pull the componente of the encrypted message apart
+    chunks = encrypted_message.split("fx")
+    ciphertext_len : LibC::SizeT = (chunks[0].size / 2).to_u64
+    ciphertext = hex2bytes(chunks[0])
+    tag_len : LibC::Int = (chunks[1].size / 2)
+    tag = hex2bytes(chunks[1])
+    iv_len : LibC::Int = (chunks[2].size / 2)
+    iv = hex2bytes(chunks[2])
+    epubk_len : LibC::SizeT = (chunks[3].size / 2).to_u64
+    epubk = hex2bytes(chunks[3])
+
+    # set the group type from NID
+    eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
+    raise "Error could not set EC group" unless eccgrp_id != 0
+
+    # use the crypto library decrypt the message using the private key, ephemeral public key, init vector and tag
+    status = LibECCrypto.decrypt_message(eccgrp_id, hex_receiver_private_key,
+                                         epubk, epubk_len, iv, iv_len, tag, tag_len, ciphertext, ciphertext_len,
+                                         pointerof(decrypted_message))
+    
+    raise String.new(decrypted_message) unless status == 0
+
+    return String.new(decrypted_message)
+  end
+
+  def self.bytes2hex(the_bytes : UInt8*, the_length : Int) : String
+    str = ""
+    i = 0
+    while i < the_length
+      the_hex = the_bytes[i].to_s(16)
+      the_hex = "0" + the_hex if the_hex.size == 1
+      str += the_hex
+      i += 1
+    end
+    return str
+  end
+
+  def self.hex2bytes(hex_string : String) : UInt8*
+    str = hex_string
+    byte_ptr = Pointer(UInt8).malloc(hex_string.size / 2)
+    i = 0
+    while str.size > 0
+      digits = str[0..1]
+      str = str[2..-1]
+      byte_ptr[i] = digits.to_u8(16)
+      i += 1
+    end
+    return byte_ptr
+  end
+
+
 end

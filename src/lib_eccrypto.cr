@@ -1,5 +1,8 @@
 # This is using a path to the default installed version of openSSL installed on the operating system.
 # This library requires openssl to be installed
+# This library requires that the encryption.o C library to be pre-built and residing in the sibling 'encryption' directory
+#
+@[Link(ldflags: "`printf %s '#{__DIR__}/../encryption/*.o'`")]
 @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'`")]
 @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'`")]
 lib LibECCrypto
@@ -7,6 +10,7 @@ lib LibECCrypto
   alias EVP_PKEY = Void*
   alias EC_KEY = Void*
   alias EcPoint = Void*
+  alias BIGNUM = Void*
 
   type EcGroup = Void*
 
@@ -71,8 +75,18 @@ lib LibECCrypto
   fun BN_bn2hex(a : Void*) : LibC::Char*
   fun BN_bn2dec(a : Void*) : LibC::Char*
   fun BN_hex2bn(a : LibC::Int**, str : LibC::Char*) : LibC::Int
+  fun BN_bin2bn(s : Void*, len : LibC::Int, ret : BIGNUM) : BIGNUM 
+  fun BN_bn2bin(a : Void*, to : LibC::Char*) : LibC::Int
+
   fun BN_new : LibC::Int*
   fun BN_clear_free(a : Void*)
+  fun BN_num_bits(a : Void*) : LibC::Int
+
+  fun BN_CTX_new : Void*
+  fun BN_CTX_start(Void*)
+  fun BN_CTX_end(Void*)
+  fun BN_CTX_free(Void*)
+    
 
   # Creates a new EC_POINT object for the specified EC_GROUP
   # param:  group  EC_GROUP the underlying EC_GROUP object
@@ -89,6 +103,7 @@ lib LibECCrypto
   fun EC_POINT_point2hex(x0 : EcGroup, x1 : EcPoint, form : PointConversionFormT, ctx : Void*) : LibC::Char*
   fun EC_POINT_hex2point(x0 : EcGroup, x1 : LibC::Char*, x2 : EcPoint, x3 : Void*) : EcPoint
   fun EC_POINT_bn2point(x0 : EcGroup, x1 : LibC::Int*, x2 : EcPoint) : EcPoint
+  fun EC_POINT_point2bn(x0 : EcGroup, x1 : EcPoint, form : PointConversionFormT, x1 : LibC::Int*, ctx : Void*) : LibC::Int
   fun EC_POINT_free(point : EcPoint)
 
   # Creates a EC_GROUP object with a curve specified by a NID
@@ -157,4 +172,27 @@ lib LibECCrypto
   fun ECDSA_SIG_new : EcdsaSig
 
   fun EC_POINT_mul(group : EcGroup, r : EcPoint, n : LibC::Int*, q : EcPoint, m : LibC::Int*, ctx : LibC::Int*) : LibC::Int
+
+  # function to return the number of bits needed to represent a field element
+  fun EC_GROUP_get_degree(group : EcGroup) : LibC::Int
+
+  # function to return the EC_GROUP object of a EC_KEY object
+  fun EC_KEY_get0_group(key : EC_KEY) : EcGroup
+
+  # encrypt message function
+  fun encrypt_message(message : UInt8*, message_size : LibC::Int, group_id : LibC::Int,
+                      hex_receiver_public_key : UInt8*,
+                      epubk : UInt8**, epubk_len : LibC::SizeT*,
+                      iv : UInt8**, iv_len : LibC::Int*,
+                      tag : UInt8**, tag_len : LibC::Int*,
+                      ciphertext : UInt8**, ciphertext_len : LibC::SizeT* ) : LibC::Int
+
+  # decrypt message function
+  fun decrypt_message(group_id : LibC::Int, hex_receiver_private_key : UInt8*,
+                      epubk : UInt8*, epubk_len : LibC::SizeT,
+                      iv : UInt8*, iv_len : LibC::Int,
+                      tag : UInt8*, tag_len : LibC::Int,
+                      ciphertext : UInt8*, ciphertext_len : LibC::SizeT,
+                      plain_text : UInt8**) : LibC::Int
+
 end

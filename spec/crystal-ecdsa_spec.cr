@@ -61,4 +61,53 @@ describe ECCrypto do
       public_key.should eq(expected_public_key)
     end
   end
+
+  describe "encryption_and_decryption_of_a_message" do
+    it "should encrypt a message to a ciphertext and decrypt the same message from the ciphertext" do
+      receiver_key_pair = ECCrypto.create_key_pair
+      receiver_public_key = receiver_key_pair[:hex_public_key]
+      receiver_private_key = receiver_key_pair[:hex_private_key]
+      message = "This is a test, you really should study"
+      encrypted_message = ECCrypto.encrypt(receiver_public_key, message)
+      decrypted_message = ECCrypto.decrypt(receiver_private_key, encrypted_message)
+      decrypted_message.should eq(message)
+    end
+  end
+
+  describe "encryption_should_return_an_error_if_invalid_public_key" do
+    it "should detect invalid public key" do
+      message = "This is a test, you really should study"
+      expect_raises(Exception, "Invalid public key") do
+        encrypted_message = ECCrypto.encrypt("xxyyxzz", message)
+      end
+    end
+  end
+
+  describe "encryption_should_return_an_error_if_invalid_private_key" do
+    it "should detect invalid private key" do
+      receiver_key_pair = ECCrypto.create_key_pair
+      receiver_public_key = receiver_key_pair[:hex_public_key]
+      receiver_private_key = receiver_key_pair[:hex_private_key]
+      message = "This is a test, you really should study"
+      encrypted_message = ECCrypto.encrypt(receiver_public_key, message)
+      expect_raises(Exception, "Invalid private key") do
+        encrypted_message = ECCrypto.decrypt("xxyyxzz", encrypted_message)
+      end
+    end
+  end
+
+  describe "encryption_and_decryption_of_a_larger message" do
+    it "should encrypt a message (larger than 256 bytes) to a ciphertext and decrypt the same message from the ciphertext" do
+      receiver_key_pair = ECCrypto.create_key_pair
+      receiver_public_key = receiver_key_pair[:hex_public_key]
+      receiver_private_key = receiver_key_pair[:hex_private_key]
+      message = "This is a test of the emergency broadcast system.\n"
+      message += "If this were an actual emergency, you would be instructed to put your head between you legs and kiss your ass goodbye.\n"
+      message += "This is a test of the emergency broadcast system.\n"
+      message += "If this were an actual emergency, you would be instructed to put your head between you legs and kiss your ass goodbye.\n"
+      encrypted_message = ECCrypto.encrypt(receiver_public_key, message)
+      decrypted_message = ECCrypto.decrypt(receiver_private_key, encrypted_message)
+      decrypted_message.should eq(message)
+    end
+  end
 end
