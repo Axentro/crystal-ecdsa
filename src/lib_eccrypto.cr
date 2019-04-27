@@ -1,10 +1,6 @@
 # This is using a path to the default installed version of openSSL installed on the operating system.
 # This library requires openssl to be installed
 # This library requires that the encryption.o C library to be pre-built and residing in the sibling 'encryption' directory
-#
-# ** The line below should does cause the encryption C library to get compiled, but somehow goofs up the crystal link>
-#     (so at least for now, the encryption C library has to be manually compiled with the 'make' command)
-#@[Link(ldflags: "`cd #{__DIR__}/../encryption ; make ; cd - || printf %s '#{__DIR__}/../encryption/*.o'`")]
 
 @[Link(ldflags: "`printf %s '#{__DIR__}/../encryption/*.o'`")]
 @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'`")]
@@ -79,7 +75,7 @@ lib LibECCrypto
   fun BN_bn2hex(a : Void*) : LibC::Char*
   fun BN_bn2dec(a : Void*) : LibC::Char*
   fun BN_hex2bn(a : LibC::Int**, str : LibC::Char*) : LibC::Int
-  fun BN_bin2bn(s : Void*, len : LibC::Int, ret : BIGNUM) : BIGNUM 
+  fun BN_bin2bn(s : Void*, len : LibC::Int, ret : BIGNUM) : BIGNUM
   fun BN_bn2bin(a : Void*, to : LibC::Char*) : LibC::Int
 
   fun BN_new : LibC::Int*
@@ -90,7 +86,7 @@ lib LibECCrypto
   fun BN_CTX_start(Void*)
   fun BN_CTX_end(Void*)
   fun BN_CTX_free(Void*)
-    
+
 
   # Creates a new EC_POINT object for the specified EC_GROUP
   # param:  group  EC_GROUP the underlying EC_GROUP object
