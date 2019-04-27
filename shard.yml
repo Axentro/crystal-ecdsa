@@ -3,7 +3,11 @@ version: 0.1.1
 
 authors:
   - Kingsley Hendrickse <kingsley.hendrickse@gmail.com>
+  - 
 
-crystal: 0.27.0
+scripts:
+  postinstall: cd encryption && make
+
+crystal: 0.28.0
 
 license: MIT

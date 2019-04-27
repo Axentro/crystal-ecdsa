@@ -3,6 +3,8 @@
 A Crystal C binding for the ECDSA functionality of OpenSSL that focuses specifically on secp256k1.
 This library requires you to have OpenSSL installed.
 
+Thanks to Eric Davis for his ecies library and to John Feras for his adaptation of Eric's code for this library.
+
 [![Build Status](https://travis-ci.org/SushiChain/crystal-ecdsa.svg?branch=master)](https://travis-ci.org/SushiChain/crystal-ecdsa)
 
 ## Installation
@@ -60,3 +62,4 @@ Using the keypair you can sign a message and then verify it
 ## Contributors
 
 - [Kingsley Hendrickse](https://github.com/kingsleyh) - creator and maintainer
+- [John Feras](https://github.com/jferas) - contributor

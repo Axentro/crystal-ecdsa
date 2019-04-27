@@ -1,3 +1,4 @@
+# This is used for travis-ci to run the specs
 VERSION ?= OpenSSL_1_1_1a
 
 all:
