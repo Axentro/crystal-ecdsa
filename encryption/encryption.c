@@ -4,6 +4,7 @@
  * Author: Eric Davis <edavis@insanum.com>
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
