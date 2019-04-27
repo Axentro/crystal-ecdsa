@@ -36,6 +36,13 @@ ECCrypto.verify(public_key, message, sig["r"], sig["s"])
 
 # get the public key from a private key
 public_key = ECCrypto.get_public_key_from_private(private_key)
+
+# encrypt a message using a given receiver's public key
+encrypted_message = ECCrypto.encrypt(receiver_public_key, "This is a secret message")
+
+# decrypt a received message using known private key
+decrypted_message = ECCcrypto.decrypt(private_key, encrypted_message)
+
 ```
 
 You can create a keypair which returns the public and private keys. The private key will always be of length 64 and the public key of length 130

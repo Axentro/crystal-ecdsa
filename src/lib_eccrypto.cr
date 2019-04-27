@@ -2,6 +2,10 @@
 # This library requires openssl to be installed
 # This library requires that the encryption.o C library to be pre-built and residing in the sibling 'encryption' directory
 #
+# ** The line below should does cause the encryption C library to get compiled, but somehow goofs up the crystal link>
+#     (so at least for now, the encryption C library has to be manually compiled with the 'make' command)
+#@[Link(ldflags: "`cd #{__DIR__}/../encryption ; make ; cd - || printf %s '#{__DIR__}/../encryption/*.o'`")]
+
 @[Link(ldflags: "`printf %s '#{__DIR__}/../encryption/*.o'`")]
 @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'`")]
 @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'`")]

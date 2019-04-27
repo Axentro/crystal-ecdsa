@@ -74,28 +74,6 @@ describe ECCrypto do
     end
   end
 
-  describe "encryption_should_return_an_error_if_invalid_public_key" do
-    it "should detect invalid public key" do
-      message = "This is a test, you really should study"
-      expect_raises(Exception, "Invalid public key") do
-        encrypted_message = ECCrypto.encrypt("xxyyxzz", message)
-      end
-    end
-  end
-
-  describe "encryption_should_return_an_error_if_invalid_private_key" do
-    it "should detect invalid private key" do
-      receiver_key_pair = ECCrypto.create_key_pair
-      receiver_public_key = receiver_key_pair[:hex_public_key]
-      receiver_private_key = receiver_key_pair[:hex_private_key]
-      message = "This is a test, you really should study"
-      encrypted_message = ECCrypto.encrypt(receiver_public_key, message)
-      expect_raises(Exception, "Invalid private key") do
-        encrypted_message = ECCrypto.decrypt("xxyyxzz", encrypted_message)
-      end
-    end
-  end
-
   describe "encryption_and_decryption_of_a_larger message" do
     it "should encrypt a message (larger than 256 bytes) to a ciphertext and decrypt the same message from the ciphertext" do
       receiver_key_pair = ECCrypto.create_key_pair
@@ -110,4 +88,37 @@ describe ECCrypto do
       decrypted_message.should eq(message)
     end
   end
+
+  describe "encryption_should_return_an_error_if_invalid_public_key" do
+    it "should detect invalid public key" do
+      message = "This is a test, you really should study"
+      expect_raises(Exception, "Invalid public key") do
+        encrypted_message = ECCrypto.encrypt("xxyyxzz", message)
+      end
+    end
+  end
+
+  describe "decryption_should_return_an_error_if_invalid_private_key" do
+    it "should detect invalid private key" do
+      receiver_key_pair = ECCrypto.create_key_pair
+      receiver_public_key = receiver_key_pair[:hex_public_key]
+      receiver_private_key = receiver_key_pair[:hex_private_key]
+      message = "This is a test, you really should study"
+      encrypted_message = ECCrypto.encrypt(receiver_public_key, message)
+      expect_raises(Exception, "Invalid private key") do
+        decrypted_message = ECCrypto.decrypt("xxyyxzz", encrypted_message)
+      end
+    end
+  end
+
+  describe "decryption_should_return_an_error_if_requested_to_decrypt_not_encrypted_by_this_iibrary" do
+    it "should detect invalid private key" do
+      receiver_key_pair = ECCrypto.create_key_pair
+      receiver_private_key = receiver_key_pair[:hex_private_key]
+      expect_raises(Exception, "Message not encrypted by ECCrypto.encrypt") do
+        decrypted_message = ECCrypto.decrypt(receiver_private_key, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbb")
+      end
+    end
+  end
+
 end

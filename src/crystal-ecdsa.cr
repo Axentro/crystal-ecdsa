@@ -233,6 +233,7 @@ module ECCrypto
 
     # pull the componente of the encrypted message apart
     chunks = encrypted_message.split("fx")
+    raise "Message not encrypted by ECCrypto.encrypt" if chunks.size != 4
     ciphertext_len : LibC::SizeT = (chunks[0].size / 2).to_u64
     ciphertext = hex2bytes(chunks[0])
     tag_len : LibC::Int = (chunks[1].size / 2)
