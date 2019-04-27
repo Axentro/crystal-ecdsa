@@ -1,5 +1,5 @@
 
-CC=clang
+CC=cc
 CFLAGS=-Wall -I/usr/local/opt/openssl/include
 
 SRC=encryption.c
@@ -10,4 +10,3 @@ all:
 
 clean:
 	rm -f $(LIB)
-
