@@ -1,9 +1,9 @@
 name: crystal-ecdsa
-version: 0.1.1
+version: 0.1.2
 
 authors:
   - Kingsley Hendrickse <kingsley.hendrickse@gmail.com>
-  - 
+  - John Feras
 
 scripts:
   postinstall: cd encryption && make
