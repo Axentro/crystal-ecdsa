@@ -43,7 +43,7 @@ public_key = ECCrypto.get_public_key_from_private(private_key)
 encrypted_message = ECCrypto.encrypt(receiver_public_key, "This is a secret message")
 
 # decrypt a received message using known private key
-decrypted_message = ECCcrypto.decrypt(private_key, encrypted_message)
+decrypted_message = ECCrypto.decrypt(private_key, encrypted_message)
 
 ```
 

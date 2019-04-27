@@ -2,3 +2,4 @@ language: crystal
 sudo: required
 before_install:
   - cd ext && make
+  - cd encryption && make
