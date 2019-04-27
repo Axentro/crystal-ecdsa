@@ -51,6 +51,12 @@ You can create a keypair which returns the public and private keys. The private 
 
 Using the keypair you can sign a message and then verify it
 
+## Developement
+
+You must generate the encryption.o before the library is usable and before the specs will run.
+
+`cd encryption && make`
+
 ## Contributing
 
 1. Fork it (<https://github.com/sushichain/crystal-ecdsa/fork>)

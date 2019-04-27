@@ -211,6 +211,7 @@ module ECCrypto
     # set the group type from NID
     eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
     raise "Error could not set EC group" unless eccgrp_id != 0
+    raise "Message must not be empty" unless message.size > 0
 
     # use the crypto library to encrypt the message using the receiver public key and get the ephemeral public key, the init vector and the tag
     #    (we add one to message size to encrypt the null at the end of the string)
@@ -229,8 +230,9 @@ module ECCrypto
 
   def self.decrypt(hex_receiver_private_key : String, encrypted_message : String) : String
     dummy             : UInt8 = 0
-    decrypted_message : UInt8* = pointerof(dummy) 
+    decrypted_message : UInt8* = pointerof(dummy)
 
+    raise "Encrypted message must not be empty" unless encrypted_message.size > 0
     # pull the componente of the encrypted message apart
     chunks = encrypted_message.split("fx")
     raise "Message not encrypted by ECCrypto.encrypt" if chunks.size != 4
@@ -251,7 +253,7 @@ module ECCrypto
     status = LibECCrypto.decrypt_message(eccgrp_id, hex_receiver_private_key,
                                          epubk, epubk_len, iv, iv_len, tag, tag_len, ciphertext, ciphertext_len,
                                          pointerof(decrypted_message))
-    
+
     raise String.new(decrypted_message) unless status == 0
 
     return String.new(decrypted_message)

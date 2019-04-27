@@ -84,12 +84,12 @@ describe ECCrypto do
       end
     end
 
-    # it "should raise an error on empty message" do
-    #   expect_raises(Exception, "Message must not be empty") do
-    #     receiver_public_key = ECCrypto.create_key_pair[:hex_public_key]
-    #     ECCrypto.encrypt(receiver_public_key, "")
-    #   end
-    # end
+    it "should raise an error on empty message" do
+      expect_raises(Exception, "Message must not be empty") do
+        receiver_public_key = ECCrypto.create_key_pair[:hex_public_key]
+        ECCrypto.encrypt(receiver_public_key, "")
+      end
+    end
   end
 
   describe "Decrypt errors" do
@@ -115,13 +115,13 @@ describe ECCrypto do
       end
     end
 
-    # it "should raise an error on empty decrypt message" do
-    #   receiver_private_key = ECCrypto.create_key_pair[:hex_private_key]
-    #
-    #   expect_raises(Exception, "Message must not be empty") do
-    #      ECCrypto.decrypt(receiver_private_key, "")
-    #   end
-    # end
+    it "should raise an error on empty decrypt message" do
+      receiver_private_key = ECCrypto.create_key_pair[:hex_private_key]
+
+      expect_raises(Exception, "Encrypted message must not be empty") do
+         ECCrypto.decrypt(receiver_private_key, "")
+      end
+    end
 
     it "should raise an error when encrypted message was not encrypted by this library" do
       receiver_key_pair = ECCrypto.create_key_pair
