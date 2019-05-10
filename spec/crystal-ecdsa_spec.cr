@@ -42,6 +42,14 @@ describe ECCrypto do
       result.should be_false
     end
 
+    it "should return false if can't verify a signed message when using a different message" do
+      message = ECCrypto.sha256("this message is being signed")
+      different_message = ECCrypto.sha256("this is a different message")
+      sig = ECCrypto.sign(private_key, message)
+      result = ECCrypto.verify(public_key, different_message, sig["r"], sig["s"])
+      result.should be_false
+    end
+
     it "should return error if invalid public key" do
       message = ECCrypto.sha256("this message is being signed")
       sig = ECCrypto.sign(private_key, message)
