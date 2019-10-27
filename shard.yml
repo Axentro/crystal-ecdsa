@@ -1,5 +1,5 @@
 name: crystal-ecdsa
-version: 0.1.5
+version: 0.1.6
 
 authors:
   - Kingsley Hendrickse <kingsley.hendrickse@gmail.com>
@@ -8,6 +8,6 @@ authors:
 scripts:
   postinstall: cd encryption && make
 
-crystal: 0.28.0
+crystal: 0.31.1
 
 license: MIT

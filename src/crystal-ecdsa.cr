@@ -238,9 +238,9 @@ module ECCrypto
     raise "Message not encrypted by ECCrypto.encrypt" if chunks.size != 4
     ciphertext_len : LibC::SizeT = (chunks[0].size / 2).to_u64
     ciphertext = hex2bytes(chunks[0])
-    tag_len : LibC::Int = (chunks[1].size / 2)
+    tag_len : LibC::Int = (chunks[1].size / 2).to_i
     tag = hex2bytes(chunks[1])
-    iv_len : LibC::Int = (chunks[2].size / 2)
+    iv_len : LibC::Int = (chunks[2].size / 2).to_i
     iv = hex2bytes(chunks[2])
     epubk_len : LibC::SizeT = (chunks[3].size / 2).to_u64
     epubk = hex2bytes(chunks[3])
@@ -273,7 +273,7 @@ module ECCrypto
 
   def self.hex2bytes(hex_string : String) : UInt8*
     str = hex_string
-    byte_ptr = Pointer(UInt8).malloc(hex_string.size / 2)
+    byte_ptr = Pointer(UInt8).malloc((hex_string.size / 2).to_i)
     i = 0
     while str.size > 0
       digits = str[0..1]
