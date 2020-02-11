@@ -67,42 +67,8 @@ module ECCrypto
   end
 
   def self.get_public_key_from_private(hex_private_key : String)
-    # Create a EC key structure, setting the group type from NID
-    eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
-    raise "Error could not set EC group" unless eccgrp_id != 0
-    myecc = LibECCrypto.EC_KEY_new_by_curve_name(eccgrp_id)
-    raise "Error could not create curve" if myecc.null?
-
-    # Create a group
-    eccgrp = LibECCrypto.EC_GROUP_new_by_curve_name(eccgrp_id)
-    raise "Error could not get the group curve" if eccgrp.null?
-
-    #  Create an EC_POINT to hold the public_key
-    ec_point = LibECCrypto.EC_POINT_new(eccgrp)
-    raise "Error could not create point from group" if ec_point.null?
-
-    # Convert hex private key to binary
-    bn = LibECCrypto.BN_new
-    raise "Error could not create a new bn" if bn.null?
-    binary_private_key = LibECCrypto.BN_hex2bn(pointerof(bn), hex_private_key)
-    raise "Error private key binary is wrong size" if binary_private_key != 64
-
-    # Do the mul that sets the public key onto ec_point
-    mul = LibECCrypto.EC_POINT_mul(eccgrp, ec_point, bn, nil, nil, nil)
-    raise "Error could not find public key" unless mul == 1
-
-    # Get the public key in hex
-    form = LibECCrypto::PointConversionFormT::PointConversionUncompressed
-    public_key_pointer = LibECCrypto.EC_POINT_point2hex(eccgrp, ec_point, form, nil)
-    raise "Error could not get the public key pointer" if public_key_pointer.null?
-
-    # Free up mem
-    LibECCrypto.EC_KEY_free(myecc)
-    LibECCrypto.EC_GROUP_free(eccgrp)
-    LibECCrypto.EC_POINT_free(ec_point)
-    LibECCrypto.BN_clear_free(bn)
-
-    String.new(public_key_pointer).downcase
+    ec_point = Secp256k1::Util.public_key_from_private BigInt.new(hex_private_key, 16)
+    Secp256k1::Util.public_key_uncompressed_prefix ec_point
   end
 
   def self.encrypt(hex_receiver_public_key : String, message : String) : String
