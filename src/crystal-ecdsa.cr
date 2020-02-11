@@ -61,9 +61,7 @@ module ECCrypto
 
     # verify
     signature = Secp256k1::ECDSASignature.new BigInt.new(r, 16), BigInt.new(s, 16)
-    result = Secp256k1::Signature.verify(message, signature, point_res)
-
-    result == 1
+    Secp256k1::Signature.verify(message, signature, point_res)
   end
 
   def self.get_public_key_from_private(hex_private_key : String)
