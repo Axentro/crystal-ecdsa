@@ -1,39 +1,25 @@
 require "openssl"
+require "secp256k1"
 require "./lib_eccrypto"
 
 module ECCrypto
   # Creates a Key Pair
   def self.create_key_pair
-    # Create a EC key structure, setting the group type from NID
-    eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
-    raise "Error could not set EC group" unless eccgrp_id != 0
-    myecc = LibECCrypto.EC_KEY_new_by_curve_name(eccgrp_id)
-    raise "Error could not create curve" if myecc.null?
-
     # Create the public/private EC key pair
-    gen_res = LibECCrypto.EC_KEY_generate_key(myecc)
-    raise "Error could not generate an EC public/private key pair" unless gen_res == 1
+    gen_res = Secp256k1::Keypair.new
+    raise "Error could not generate an EC public/private key pair" if gen_res.nil?
 
     #  Get the private key
-    bn = LibECCrypto.EC_KEY_get0_private_key(myecc)
-    raise "Error could not get the private key" if bn.null?
-    private_key_pointer = LibECCrypto.BN_bn2hex(bn)
-    raise "Error could not get the private key pointer" if private_key_pointer.null?
-    private_key = String.new(private_key_pointer).downcase
+    bn = gen_res.get_secret
+    raise "Error could not get the private key" if bn.nil?
+    private_key = bn.downcase
 
     # Get the public key
-    ec_point = LibECCrypto.EC_KEY_get0_public_key(myecc)
-    raise "Error could not get the public key" if ec_point.null?
-    form = LibECCrypto::PointConversionFormT::PointConversionUncompressed
-    eccgrp = LibECCrypto.EC_GROUP_new_by_curve_name(eccgrp_id)
-    raise "Error could not get the group curve" if eccgrp.null?
-    public_key_pointer = LibECCrypto.EC_POINT_point2hex(eccgrp, ec_point, form, nil)
-    raise "Error could not get the public key pointer" if public_key_pointer.null?
-    public_key = String.new(public_key_pointer).downcase
-
-    # Free up mem
-    LibECCrypto.EC_KEY_free(myecc)
-    LibECCrypto.EC_GROUP_free(eccgrp)
+    ec_point = gen_res.public_key
+    raise "Error could not get the public key" if ec_point.nil?
+    public_key_pointer = Secp256k1::Util.public_key_uncompressed_prefix ec_point
+    raise "Error could not get the public key pointer" if public_key_pointer.nil?
+    public_key = public_key_pointer.downcase
 
     return create_key_pair if private_key.hexbytes? == nil || private_key.size != 64
     return create_key_pair if public_key.hexbytes? == nil || public_key.size != 130
