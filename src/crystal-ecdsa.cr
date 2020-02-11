@@ -6,20 +6,18 @@ module ECCrypto
   # Creates a Key Pair
   def self.create_key_pair
     # Create the public/private EC key pair
-    gen_res = Secp256k1::Keypair.new
-    raise "Error could not generate an EC public/private key pair" if gen_res.nil?
+    key_pair = Secp256k1::Keypair.new
+    raise "Error could not generate an EC public/private key pair" if key_pair.nil?
 
     #  Get the private key
-    bn = gen_res.get_secret
-    raise "Error could not get the private key" if bn.nil?
-    private_key = bn.downcase
+    private_key = key_pair.get_secret
+    raise "Error could not get the private key" if private_key.nil?
 
     # Get the public key
-    ec_point = gen_res.public_key
-    raise "Error could not get the public key" if ec_point.nil?
-    public_key_pointer = Secp256k1::Util.public_key_uncompressed_prefix ec_point
-    raise "Error could not get the public key pointer" if public_key_pointer.nil?
-    public_key = public_key_pointer.downcase
+    ec_point = key_pair.public_key
+    raise "Error could not get the public ec point" if ec_point.nil?
+    public_key = Secp256k1::Util.public_key_uncompressed_prefix ec_point
+    raise "Error could not get the public key" if public_key.nil?
 
     return create_key_pair if private_key.hexbytes? == nil || private_key.size != 64
     return create_key_pair if public_key.hexbytes? == nil || public_key.size != 130
@@ -31,9 +29,7 @@ module ECCrypto
   end
 
   def self.sha256(base : Bytes | String) : String
-    hash = OpenSSL::Digest.new("SHA256")
-    hash.update(base)
-    hash.hexdigest
+    Secp256k1::Hash.sha256 base
   end
 
   # Signs a message with a private key
