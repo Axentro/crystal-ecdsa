@@ -53,7 +53,7 @@ describe ECCrypto do
     it "should return error if invalid public key" do
       message = ECCrypto.sha256("this message is being signed")
       sig = ECCrypto.sign(private_key, message)
-      expect_raises(Exception, "Error could not get point from public key") do
+      expect_raises(Exception, "unknown public key format (invalid key size: 8)") do
         ECCrypto.verify("whatever", message, sig["r"], sig["s"])
       end
     end

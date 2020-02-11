@@ -19,6 +19,7 @@ module ECCrypto
     public_key = Secp256k1::Util.public_key_uncompressed_prefix ec_point
     raise "Error could not get the public key" if public_key.nil?
 
+    # Retry if the keypair appears invalid
     return create_key_pair if private_key.hexbytes? == nil || private_key.size != 64
     return create_key_pair if public_key.hexbytes? == nil || public_key.size != 130
 
@@ -34,57 +35,17 @@ module ECCrypto
 
   # Signs a message with a private key
   def self.sign(hex_private_key : String, message : String)
-    # Create a EC key structure, setting the group type from NID
-    eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
-    raise "Error could not set EC group" unless eccgrp_id != 0
-    myecc = LibECCrypto.EC_KEY_new_by_curve_name(eccgrp_id)
-    raise "Error could not create curve" if myecc.null?
-
-    # set signing algo
-    LibECCrypto.EC_KEY_set_asn1_flag(myecc, 1)
-
-    # convert hex private key to binary
-    bn = LibECCrypto.BN_new
-    raise "Error could not create a new bn" if bn.null?
-    binary_private_key = LibECCrypto.BN_hex2bn(pointerof(bn), hex_private_key)
-    raise "Error private key binary is wrong size" if binary_private_key != 64
-
-    # add binary private key to EC structure
-    set_key = LibECCrypto.EC_KEY_set_private_key(myecc, bn)
-    raise "Error could not set private key to EC" unless set_key == 1
-
-    # # ------------
-    # # convert binary public key to point
-    # eccgrp = LibECCrypto.EC_GROUP_new_by_curve_name(eccgrp_id)
-    # raise "Error could not get the group curve" if eccgrp.null?
-    # ec_point = LibECCrypto.EC_POINT_new(eccgrp)
-    # raise "Error could not create point from group" if ec_point.null?
-    #
-    # point_res = LibECCrypto.EC_POINT_hex2point(eccgrp, hex_public_key.to_unsafe, ec_point, nil)
-    # raise "Error could not get point from public key" if point_res.null?
-    #
-    # # set the public key on the EC structure
-    # set_key = LibECCrypto.EC_KEY_set_public_key(myecc, ec_point)
-    # raise "Error could not set public key to EC" unless set_key == 1
-    #
-    # # ------------
+    # set signing algo ### @TODO check algo used
+    # ## LibECCrypto.EC_KEY_set_asn1_flag(myecc, 1)
+    raise "Error private key binary is wrong size" if hex_private_key.size != 64
 
     # sign
-    sign_pointer = LibECCrypto.ECDSA_do_sign(message, message.bytesize, myecc)
-    raise "Error could not sign message with key" if sign_pointer.null?
+    signature = Secp256k1::Signature.sign message, BigInt.new(hex_private_key, 16)
+    raise "Error could not sign message with key" if signature.nil?
 
     # get the r,s from the signing
-    sign_value = sign_pointer.value
-    r_hex = LibECCrypto.BN_bn2hex(sign_value.r)
-    s_hex = LibECCrypto.BN_bn2hex(sign_value.s)
-
-    r = String.new(r_hex).downcase
-    s = String.new(s_hex).downcase
-
-    # Free up mem
-    LibECCrypto.EC_KEY_free(myecc)
-    # LibECCrypto.BN_clear_free(bn)
-    LibECCrypto.ECDSA_SIG_free(sign_pointer)
+    r = Secp256k1::Util.to_padded_hex_32 signature.r
+    s = Secp256k1::Util.to_padded_hex_32 signature.s
 
     {
       r: r,
@@ -94,47 +55,13 @@ module ECCrypto
 
   # Verifies a signed message with a public key and the signature
   def self.verify(hex_public_key : String, message : String, r : String, s : String)
-    # Create a EC key structure, setting the group type from NID
-    eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
-    raise "Error could not set EC group" unless eccgrp_id != 0
-    myecc = LibECCrypto.EC_KEY_new_by_curve_name(eccgrp_id)
-    raise "Error could not create curve" if myecc.null?
-
-    # convert binary public key to point
-    eccgrp = LibECCrypto.EC_GROUP_new_by_curve_name(eccgrp_id)
-    raise "Error could not get the group curve" if eccgrp.null?
-    ec_point = LibECCrypto.EC_POINT_new(eccgrp)
-    raise "Error could not create point from group" if ec_point.null?
-
-    point_res = LibECCrypto.EC_POINT_hex2point(eccgrp, hex_public_key.to_unsafe, ec_point, nil)
-    raise "Error could not get point from public key" if point_res.null?
-
-    # set the public key on the EC structure
-    set_key = LibECCrypto.EC_KEY_set_public_key(myecc, ec_point)
-    raise "Error could not set public key to EC" unless set_key == 1
-
-    # convert r,s hex to bn
-    r_bn = LibECCrypto.BN_new
-    raise "Error could not create a new bn for r" if r_bn.null?
-    LibECCrypto.BN_hex2bn(pointerof(r_bn), r)
-
-    s_bn = LibECCrypto.BN_new
-    raise "Error could not create a new bn for s" if s_bn.null?
-    LibECCrypto.BN_hex2bn(pointerof(s_bn), s)
-
-    # set r,s onto signature
-    sig = LibECCrypto::ECDSA_SIG_Struct_setter.new
-    sig.r = r_bn
-    sig.s = s_bn
+    # convert hex public key to point
+    point_res = Secp256k1::Util.restore_public_key hex_public_key
+    raise "Error could not get point from public key" if point_res.nil?
 
     # verify
-    result = LibECCrypto.ECDSA_do_verify(message, message.bytesize, pointerof(sig), myecc)
-
-    # Free up mem
-    LibECCrypto.EC_KEY_free(myecc)
-    LibECCrypto.EC_POINT_free(ec_point)
-    LibECCrypto.BN_clear_free(r_bn)
-    LibECCrypto.BN_clear_free(s_bn)
+    signature = Secp256k1::ECDSASignature.new BigInt.new(r, 16), BigInt.new(s, 16)
+    result = Secp256k1::Signature.verify(message, signature, point_res)
 
     result == 1
   end
