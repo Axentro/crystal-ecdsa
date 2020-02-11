@@ -158,7 +158,6 @@ module ECCrypto
   end
 
   def self.get_public_key_from_private(hex_private_key : String)
-
     # Create a EC key structure, setting the group type from NID
     eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
     raise "Error could not set EC group" unless eccgrp_id != 0
@@ -169,7 +168,7 @@ module ECCrypto
     eccgrp = LibECCrypto.EC_GROUP_new_by_curve_name(eccgrp_id)
     raise "Error could not get the group curve" if eccgrp.null?
 
-    # Create an EC_POINT to hold the public_key
+    #  Create an EC_POINT to hold the public_key
     ec_point = LibECCrypto.EC_POINT_new(eccgrp)
     raise "Error could not create point from group" if ec_point.null?
 
@@ -198,15 +197,15 @@ module ECCrypto
   end
 
   def self.encrypt(hex_receiver_public_key : String, message : String) : String
-    dummy            : UInt8 = 0
-    epubk            : UInt8* = pointerof(dummy)
-    epubk_len        : LibC::SizeT = 0
-    iv               : UInt8* = pointerof(dummy)
-    iv_len           : LibC::Int = 0
-    tag              : UInt8* = pointerof(dummy)
-    tag_len          : LibC::Int = 0
-    ciphertext       : UInt8* = pointerof(dummy)
-    ciphertext_len   : LibC::SizeT = 0
+    dummy : UInt8 = 0
+    epubk : UInt8* = pointerof(dummy)
+    epubk_len : LibC::SizeT = 0
+    iv : UInt8* = pointerof(dummy)
+    iv_len : LibC::Int = 0
+    tag : UInt8* = pointerof(dummy)
+    tag_len : LibC::Int = 0
+    ciphertext : UInt8* = pointerof(dummy)
+    ciphertext_len : LibC::SizeT = 0
 
     # set the group type from NID
     eccgrp_id = LibECCrypto.OBJ_txt2nid("secp256k1")
@@ -216,11 +215,11 @@ module ECCrypto
     # use the crypto library to encrypt the message using the receiver public key and get the ephemeral public key, the init vector and the tag
     #    (we add one to message size to encrypt the null at the end of the string)
     status = LibECCrypto.encrypt_message(message.bytes, message.size + 1,
-                                         eccgrp_id, hex_receiver_public_key,
-                                         pointerof(epubk), pointerof(epubk_len),
-                                         pointerof(iv), pointerof(iv_len),
-                                         pointerof(tag), pointerof(tag_len),
-                                         pointerof(ciphertext), pointerof(ciphertext_len))
+      eccgrp_id, hex_receiver_public_key,
+      pointerof(epubk), pointerof(epubk_len),
+      pointerof(iv), pointerof(iv_len),
+      pointerof(tag), pointerof(tag_len),
+      pointerof(ciphertext), pointerof(ciphertext_len))
     raise String.new(ciphertext) unless status == 0
 
     # put the encrypted elements all together into one long hex string that can be transmitted (pieces are separated by 'fx')
@@ -229,7 +228,7 @@ module ECCrypto
   end
 
   def self.decrypt(hex_receiver_private_key : String, encrypted_message : String) : String
-    dummy             : UInt8 = 0
+    dummy : UInt8 = 0
     decrypted_message : UInt8* = pointerof(dummy)
 
     raise "Encrypted message must not be empty" unless encrypted_message.size > 0
@@ -251,8 +250,8 @@ module ECCrypto
 
     # use the crypto library decrypt the message using the private key, ephemeral public key, init vector and tag
     status = LibECCrypto.decrypt_message(eccgrp_id, hex_receiver_private_key,
-                                         epubk, epubk_len, iv, iv_len, tag, tag_len, ciphertext, ciphertext_len,
-                                         pointerof(decrypted_message))
+      epubk, epubk_len, iv, iv_len, tag, tag_len, ciphertext, ciphertext_len,
+      pointerof(decrypted_message))
 
     raise String.new(decrypted_message) unless status == 0
 
@@ -283,6 +282,4 @@ module ECCrypto
     end
     return byte_ptr
   end
-
-
 end

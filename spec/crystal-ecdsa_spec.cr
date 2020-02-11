@@ -127,7 +127,7 @@ describe ECCrypto do
       receiver_private_key = ECCrypto.create_key_pair[:hex_private_key]
 
       expect_raises(Exception, "Encrypted message must not be empty") do
-         ECCrypto.decrypt(receiver_private_key, "")
+        ECCrypto.decrypt(receiver_private_key, "")
       end
     end
 
