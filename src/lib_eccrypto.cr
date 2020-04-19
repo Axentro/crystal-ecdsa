@@ -87,6 +87,7 @@ lib LibECCrypto
   fun BN_CTX_end(Void*)
   fun BN_CTX_free(Void*)
 
+
   # Creates a new EC_POINT object for the specified EC_GROUP
   # param:  group  EC_GROUP the underlying EC_GROUP object
   # return: newly created EC_POINT object or NULL if an error occurred
@@ -133,7 +134,7 @@ lib LibECCrypto
   #          and -1 on error
   fun ECDSA_do_verify(dgst : UInt8*, dgst_len : LibC::Int, sig : EcdsaSig2, eckey : Void*) : LibC::Int
 
-  #  Use our own Bignum so we can work with the ECDSA_SIG_Struct directly
+  # Use our own Bignum so we can work with the ECDSA_SIG_Struct directly
   # as we were originally using the setters and getters from OpenSSL 1.1.1
   # but this way we can still use older versions of OpenSSL which is much
   # easier for portability
@@ -184,7 +185,7 @@ lib LibECCrypto
                       epubk : UInt8**, epubk_len : LibC::SizeT*,
                       iv : UInt8**, iv_len : LibC::Int*,
                       tag : UInt8**, tag_len : LibC::Int*,
-                      ciphertext : UInt8**, ciphertext_len : LibC::SizeT*) : LibC::Int
+                      ciphertext : UInt8**, ciphertext_len : LibC::SizeT* ) : LibC::Int
 
   # decrypt message function
   fun decrypt_message(group_id : LibC::Int, hex_receiver_private_key : UInt8*,
@@ -193,4 +194,5 @@ lib LibECCrypto
                       tag : UInt8*, tag_len : LibC::Int,
                       ciphertext : UInt8*, ciphertext_len : LibC::SizeT,
                       plain_text : UInt8**) : LibC::Int
+
 end
