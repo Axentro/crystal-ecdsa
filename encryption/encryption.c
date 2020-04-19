@@ -206,7 +206,7 @@ int aes_gcm_256b_encrypt(uint8_t  *plaintext,
         EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL);
 
         /* Generate a new random IV. */
-        RAND_pseudo_bytes(*iv, *iv_len);
+        RAND_bytes(*iv, *iv_len);
 
         /* Prime the key and IV. */
         EVP_EncryptInit_ex(ctx, NULL, NULL, skey, *iv);
